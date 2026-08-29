@@ -1,0 +1,24 @@
+{
+  "name": "self-healing-ci",
+  "private": true,
+  "type": "module",
+  "workspaces": [
+    "apps/api",
+    "apps/web"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "build": "npm run build -w apps/api && npm run build -w apps/web",
+    "test": "npm run test -w apps/api && npm run test -w apps/web",
+    "typecheck": "npm run typecheck -w apps/api && npm run typecheck -w apps/web",
+    "dev:api": "npm run dev -w apps/api",
+    "dev:web": "npm run dev -w apps/web",
+    "gen:types": "npm run build -w apps/api && node scripts/gen-types.mjs",
+    "gen:types:check": "npm run gen:types && git diff --exit-code apps/web/src/api-types.ts"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true
+  }
+}

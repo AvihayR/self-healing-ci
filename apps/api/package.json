@@ -1,0 +1,23 @@
+{
+  "name": "@canary/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist/app.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --experimental-strip-types --test \"test/**/*.test.ts\"",
+    "dev": "node --experimental-strip-types --watch src/server.ts"
+  },
+  "dependencies": {
+    "drizzle-orm": "^0.44.6",
+    "fastify": "^5.6.1",
+    "postgres": "^3.4.7",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.8",
+    "typescript": "^5.9.3"
+  }
+}

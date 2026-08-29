@@ -1,0 +1,5 @@
+# Normalise to LF in the repository. This project's whole subject is reading
+# diffs; CRLF noise on a Windows checkout would show up in every patch the
+# agent produces and in every break catalogue entry.
+* text=auto eol=lf
+*.pdf binary
