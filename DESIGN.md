@@ -84,4 +84,8 @@ edge.
 - Unmeasured renders as `—` in `--unknown`. Never `0`, never `100%`.
 - No smooth interpolation between buckets.
 - No coloured glow on anything that is not a status.
+- The availability ramp describes a *track*, never a bucket. Passing buckets ramp
+  along their track — toward a second green normally, toward red when that track
+  contains a real outage — but the mix is capped so a passing hour never reads as a
+  failing one, and buckets that actually failed keep their own colour on top.
 - Text on glass is verified against the *composited* result, not against a token pair.

@@ -49,14 +49,28 @@ export function UptimeTrack({ buckets, draw }: { buckets: readonly Bucket[]; dra
   if (buckets.length === 0) {
     return <div className="track track-void" aria-hidden="true" />;
   }
+
+  // The ramp ends in red only when this track actually contains an outage, so
+  // the end colour is itself a signal rather than decoration.
+  const outage = buckets.some((bucket) => bucketState(bucket) === "down");
+  const last = Math.max(buckets.length - 1, 1);
+
   return (
-    <div className="track" data-draw={draw ? "true" : "false"} aria-hidden="true">
+    <div
+      className="track"
+      data-draw={draw ? "true" : "false"}
+      data-outage={outage ? "true" : "false"}
+      aria-hidden="true"
+    >
       {buckets.map((bucket, index) => (
         <span
           key={bucket.start}
           className="tick"
           data-state={bucketState(bucket)}
-          style={draw ? { animationDelay: `${Math.min(index * 5, 260)}ms` } : undefined}
+          style={{
+            ["--t" as string]: `${Math.round((index / last) * 100)}`,
+            ...(draw ? { animationDelay: `${Math.min(index * 5, 260)}ms` } : {}),
+          }}
           title={describeBucket(bucket)}
         />
       ))}
