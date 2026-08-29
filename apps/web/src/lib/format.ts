@@ -35,3 +35,22 @@ export function formatRelative(at: number | null, now: number): string {
 
   return `${Math.floor(hours / 24)}d ago`;
 }
+
+/** A UTC clock reading. Never local: nothing here has converted a timezone. */
+export function formatClock(at: number): string {
+  const date = new Date(at);
+  const hh = String(date.getUTCHours()).padStart(2, "0");
+  const mm = String(date.getUTCMinutes()).padStart(2, "0");
+  const ss = String(date.getUTCSeconds()).padStart(2, "0");
+  return `${hh}:${mm}:${ss} UTC`;
+}
+
+/** How far back a window reaches, for the left end of a chart axis. */
+export function formatSpan(window: "24h" | "7d" | "30d"): string {
+  return window === "24h" ? "24 hours ago" : window === "7d" ? "7 days ago" : "30 days ago";
+}
+
+/** Integers with thin separators, tabular-safe. */
+export function formatCount(value: number): string {
+  return value.toLocaleString("en-US");
+}

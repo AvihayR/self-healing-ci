@@ -6,7 +6,7 @@
 
 ![Node](https://img.shields.io/badge/node-%E2%89%A522-3c873a)
 ![TypeScript](https://img.shields.io/badge/typescript-strict-3178c6)
-![Tests](https://img.shields.io/badge/tests-76%20passing-1a7f37)
+![Tests](https://img.shields.io/badge/tests-98%20passing-1a7f37)
 ![Sitting](https://img.shields.io/badge/roadmap-01%20of%2012-blue)
 
 </div>
@@ -33,9 +33,9 @@ HTTP calls, 🔗 generated types the UI depends on.
 
 ```bash
 npm install
-npm test        # 76 tests
-npm run dev:api # :3000
-npm run dev:web # :5173
+npm test        # 98 tests
+npm run dev:api # :3000  (seeded with demo data)
+npm run dev:web # :5173  → open http://localhost:5173
 ```
 
 No database, no cloud, no config. Everything runs in memory.

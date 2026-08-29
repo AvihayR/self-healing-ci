@@ -1,14 +1,600 @@
-:root { color-scheme: light dark; font-family: system-ui, sans-serif; }
-body { margin: 0; padding: 2rem; }
-main { max-width: 64rem; margin: 0 auto; }
-h1 { margin: 0 0 .25rem; }
-.sub { margin: 0 0 2rem; opacity: .7; }
-table { width: 100%; border-collapse: collapse; }
-th, td { text-align: left; padding: .5rem .75rem; border-bottom: 1px solid rgba(128,128,128,.3); }
-th { font-size: .8rem; text-transform: uppercase; letter-spacing: .05em; opacity: .7; }
-.url { font-family: ui-monospace, monospace; font-size: .875rem; }
-.status { font-weight: 600; }
-.status-up { color: #1a7f37; }
-.status-down { color: #b42318; }
-.status-unknown { opacity: .6; }
-.error { color: #b42318; }
+@import "@fontsource-variable/ibm-plex-sans";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+
+/* ============================================================================
+   Canary — a calibrated readout.
+   Saturated colour appears only where it carries meaning. Up, down and unknown
+   are the only vivid things on this surface, so a failing row is visible in
+   peripheral vision. See DESIGN.md.
+   ========================================================================== */
+
+:root {
+  --ground: oklch(0.165 0.012 255);
+  --panel: oklch(0.203 0.013 255);
+  --panel-raised: oklch(0.238 0.014 255);
+  --panel-hover: oklch(0.255 0.015 255);
+
+  --rule: oklch(0.29 0.012 255);
+  --rule-strong: oklch(0.38 0.014 255);
+
+  --text: oklch(0.955 0.004 255);
+  --text-dim: oklch(0.75 0.012 255);
+  --text-faint: oklch(0.618 0.014 255);
+
+  --up: oklch(0.78 0.17 152);
+  --up-dim: oklch(0.5 0.1 152);
+  --down: oklch(0.68 0.2 24);
+  --down-dim: oklch(0.44 0.13 24);
+  /* Readable at 4.5:1 — an unmeasured monitor still has to be legible. Its
+     inertness comes from being neutral next to saturated green and red, not
+     from being too dark to read. */
+  --unknown: oklch(0.645 0.012 255);
+  --unknown-mark: oklch(0.46 0.012 255);
+  /* Partial failure. Deliberately below red in both chroma and lightness:
+     a bucket that mostly worked must never out-shout one that did not. */
+  --warn: oklch(0.66 0.105 72);
+
+  --accent: oklch(0.83 0.13 205);
+  --accent-dim: oklch(0.45 0.07 205);
+
+  --font-sans: "IBM Plex Sans Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", monospace;
+
+  /* Fixed scale, ratio ~1.2. Not fluid: this is read at a consistent DPI. */
+  --t-micro: 0.6875rem;
+  --t-small: 0.8125rem;
+  --t-body: 0.9375rem;
+  --t-lead: 1.125rem;
+  --t-display: 1.75rem;
+
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.5rem;
+  --space-6: 2rem;
+  --space-7: 3rem;
+
+  --radius: 3px;
+  --shell: 78rem;
+
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --quick: 140ms var(--ease);
+
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--ground);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: var(--t-body);
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  font-synthesis-weight: none;
+}
+
+/* --- browser surfaces: themed, not left at defaults ---------------------- */
+
+::selection {
+  background: var(--accent-dim);
+  color: var(--text);
+}
+
+:root {
+  caret-color: var(--accent);
+  scrollbar-color: var(--rule-strong) transparent;
+  scrollbar-width: thin;
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--rule-strong);
+  border: 3px solid var(--ground);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-faint);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+/* --- shell ---------------------------------------------------------------- */
+
+.shell {
+  max-width: var(--shell);
+  margin: 0 auto;
+  padding: var(--space-6) var(--space-5) var(--space-7);
+}
+
+@media (max-width: 40rem) {
+  .shell {
+    padding: var(--space-5) var(--space-4) var(--space-6);
+  }
+}
+
+/* --- masthead ------------------------------------------------------------- */
+
+.masthead {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  padding-bottom: var(--space-4);
+  border-bottom: 1px solid var(--rule);
+}
+
+.wordmark {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  margin: 0;
+  font-size: var(--t-display);
+  font-weight: 600;
+  letter-spacing: -0.022em;
+}
+
+.wordmark .glyph {
+  color: var(--up);
+}
+
+.wordmark .tag {
+  font-family: var(--font-mono);
+  font-size: var(--t-micro);
+  font-weight: 400;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.clock {
+  font-family: var(--font-mono);
+  font-size: var(--t-small);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+
+.clock .live {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: var(--space-2);
+  border-radius: 50%;
+  background: var(--up);
+  vertical-align: 1px;
+}
+
+/* --- summary rule --------------------------------------------------------- */
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  padding: var(--space-4) 0 var(--space-5);
+  border-bottom: 1px solid var(--rule);
+}
+
+.readout {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.readout .label {
+  font-size: var(--t-micro);
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.readout .value {
+  font-family: var(--font-mono);
+  font-size: var(--t-lead);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  color: var(--text);
+}
+
+.readout .value .unit {
+  font-size: var(--t-small);
+  color: var(--text-faint);
+  margin-left: 1px;
+}
+
+.readout .value[data-tone="up"] { color: var(--up); }
+.readout .value[data-tone="down"] { color: var(--down); }
+.readout .value[data-tone="unknown"] { color: var(--unknown); }
+
+/* --- table ---------------------------------------------------------------- */
+
+.rows {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rows thead th {
+  padding: var(--space-4) var(--space-3) var(--space-2);
+  font-size: var(--t-micro);
+  font-weight: 500;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.rows thead th.num {
+  text-align: right;
+}
+
+.rows tbody tr {
+  border-top: 1px solid var(--rule);
+  cursor: pointer;
+  transition: background var(--quick);
+}
+
+.rows tbody tr:hover {
+  background: var(--panel);
+}
+
+.rows tbody tr[aria-selected="true"] {
+  background: var(--panel-raised);
+}
+
+.rows tbody tr:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: -2px;
+}
+
+.rows td {
+  padding: var(--space-3);
+  vertical-align: middle;
+}
+
+.rows td.num {
+  text-align: right;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: var(--t-small);
+  white-space: nowrap;
+}
+
+.cell-name {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.cell-name .name {
+  font-weight: 500;
+  letter-spacing: -0.005em;
+}
+
+.cell-name .url {
+  font-family: var(--font-mono);
+  font-size: var(--t-micro);
+  color: var(--text-faint);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 30ch;
+}
+
+/* --- status --------------------------------------------------------------- */
+
+.status {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-family: var(--font-mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.status .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex: none;
+}
+
+.status[data-state="up"] { color: var(--up); }
+.status[data-state="up"] .dot { background: var(--up); }
+
+.status[data-state="down"] { color: var(--down); }
+.status[data-state="down"] .dot {
+  background: var(--down);
+  animation: pulse 1.6s var(--ease) infinite;
+}
+
+.status[data-state="unknown"] { color: var(--unknown); }
+.status[data-state="unknown"] .dot {
+  background: transparent;
+  border: 1px solid var(--unknown-mark);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+/* --- availability track (row) --------------------------------------------- */
+
+.track {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  height: 26px;
+  width: 100%;
+  min-width: 8rem;
+}
+
+.track-void {
+  height: 26px;
+  border-bottom: 1px dashed var(--rule);
+}
+
+.track .tick {
+  flex: 1 1 0;
+  min-width: 2px;
+  border-radius: 1px;
+  transform-origin: bottom;
+  transition: background var(--quick);
+}
+
+.track .tick[data-state="ok"] { background: var(--up-dim); }
+.track .tick[data-state="degraded"] { background: var(--warn); }
+.track .tick[data-state="down"] { background: var(--down); }
+.track .tick[data-state="empty"] { background: var(--rule); }
+
+.rows tbody tr:hover .track .tick[data-state="ok"] { background: var(--up); }
+
+/* The one authored moment: the tracks draw themselves once, on first load. */
+@media (prefers-reduced-motion: no-preference) {
+  .track[data-draw="true"] .tick { animation: draw 380ms var(--ease) backwards; }
+  .plot[data-draw="true"] .bar { animation: draw 420ms var(--ease) backwards; }
+}
+
+@keyframes draw {
+  from { transform: scaleY(0); }
+  to { transform: scaleY(1); }
+}
+
+/* --- detail panel --------------------------------------------------------- */
+
+.detail {
+  margin-top: var(--space-6);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+
+.detail-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-4) var(--space-5);
+  border-bottom: 1px solid var(--rule);
+}
+
+.detail-head h2 {
+  margin: 0;
+  font-size: var(--t-lead);
+  font-weight: 600;
+  letter-spacing: -0.015em;
+}
+
+.detail-head .url {
+  font-family: var(--font-mono);
+  font-size: var(--t-micro);
+  color: var(--text-faint);
+  word-break: break-all;
+}
+
+.detail-body {
+  padding: var(--space-5);
+  display: grid;
+  gap: var(--space-5);
+}
+
+.windows {
+  display: flex;
+  gap: 1px;
+  padding: 1px;
+  background: var(--rule);
+  border-radius: var(--radius);
+  width: fit-content;
+}
+
+.windows button {
+  border: 0;
+  background: var(--panel);
+  color: var(--text-dim);
+  font-family: var(--font-mono);
+  font-size: var(--t-micro);
+  letter-spacing: 0.05em;
+  padding: var(--space-2) var(--space-4);
+  cursor: pointer;
+  transition: background var(--quick), color var(--quick);
+}
+
+.windows button:first-child { border-radius: 2px 0 0 2px; }
+.windows button:last-child { border-radius: 0 2px 2px 0; }
+
+.windows button:hover:not([aria-pressed="true"]) {
+  background: var(--panel-hover);
+  color: var(--text);
+}
+
+.windows button[aria-pressed="true"] {
+  background: var(--accent-dim);
+  color: var(--text);
+}
+
+.plot {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 116px;
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+.plot .bar {
+  flex: 1 1 0;
+  min-width: 2px;
+  border-radius: 1px 1px 0 0;
+  background: var(--up-dim);
+  transform-origin: bottom;
+  transition: background var(--quick);
+}
+
+.plot .bar[data-state="degraded"] { background: var(--warn); }
+.plot .bar[data-state="down"] { background: var(--down); }
+.plot .bar[data-state="empty"] {
+  background: var(--rule);
+  height: 2px !important;
+}
+
+.plot .bar:hover { background: var(--accent); }
+
+.axis {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: var(--t-micro);
+  font-variant-numeric: tabular-nums;
+  color: var(--text-faint);
+}
+
+.figures {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--rule);
+}
+
+.close {
+  border: 1px solid var(--rule-strong);
+  background: transparent;
+  color: var(--text-dim);
+  border-radius: var(--radius);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--t-micro);
+  cursor: pointer;
+  transition: background var(--quick), color var(--quick), border-color var(--quick);
+}
+
+.close:hover {
+  background: var(--panel-hover);
+  color: var(--text);
+  border-color: var(--text-faint);
+}
+
+/* --- notices -------------------------------------------------------------- */
+
+.notice {
+  margin-top: var(--space-6);
+  padding: var(--space-6) var(--space-5);
+  border: 1px solid var(--rule);
+  border-radius: var(--radius);
+  background: var(--panel);
+}
+
+.notice h2 {
+  margin: 0 0 var(--space-2);
+  font-size: var(--t-body);
+  font-weight: 600;
+}
+
+.notice p {
+  margin: 0;
+  color: var(--text-dim);
+  max-width: 62ch;
+}
+
+.notice code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  color: var(--accent);
+}
+
+.notice[data-tone="error"] { border-color: var(--down-dim); }
+.notice[data-tone="error"] h2 { color: var(--down); }
+
+/* --- skeleton ------------------------------------------------------------- */
+
+.skeleton {
+  background: linear-gradient(90deg, var(--panel) 25%, var(--panel-raised) 50%, var(--panel) 75%);
+  background-size: 200% 100%;
+  border-radius: 2px;
+  height: 0.8em;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .skeleton { animation: shimmer 1.4s linear infinite; }
+}
+
+@keyframes shimmer {
+  to { background-position: -200% 0; }
+}
+
+@media (max-width: 52rem) {
+  .rows .optional { display: none; }
+  .cell-name .url { max-width: 22ch; }
+}
+
+.detail-error {
+  margin: 0;
+  color: var(--down);
+}
+
+.plot-pending {
+  border-bottom: 1px solid var(--rule-strong);
+}
+
+@media (max-width: 40rem) {
+  .summary {
+    gap: var(--space-2) var(--space-5);
+  }
+
+  .masthead {
+    gap: var(--space-2);
+  }
+}

@@ -21,3 +21,6 @@ Thumbs.db
 # docs/ itself stays free for the scorecard dashboard at sitting 11.
 docs/ci-healer-plan.*
 docs/ci-healer-architecture.drawio
+
+# Local screenshot scratch
+.shots/

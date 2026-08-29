@@ -8,7 +8,8 @@
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "test": "node --experimental-strip-types --test \"test/**/*.test.ts\"",
-    "dev": "node --experimental-strip-types --watch src/server.ts"
+    "dev": "node --experimental-strip-types --watch src/server.ts --seed",
+    "start": "node --experimental-strip-types src/server.ts"
   },
   "dependencies": {
     "drizzle-orm": "^0.44.6",
