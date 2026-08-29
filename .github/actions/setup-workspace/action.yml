@@ -22,14 +22,8 @@ runs:
       shell: bash
       run: npm ci
 
-    # esbuild ships a platform binary from a postinstall script. npm 11 defers
-    # unreviewed install scripts, and the root package.json's allowScripts entry
-    # is what lets this one run — without the binary, `vite build` fails with an
-    # error that names esbuild rather than the permission that blocked it.
-    # `transformSync`, not `require`. esbuild resolves its platform binary
-    # lazily on first use, so requiring the package succeeds even when the
-    # binary is missing — a guard written that way passes in precisely the
-    # situation it exists to catch. This invokes it for real.
-    - name: Verify esbuild binary
-      shell: bash
-      run: node -e "require('esbuild').transformSync('const a = 1'); console.log('esbuild binary present')"
+    # Note for whoever hits it: esbuild ships a platform binary from a
+    # postinstall script, and npm 11 defers unreviewed install scripts. The root
+    # package.json's `allowScripts` entry is what permits this one, and it is
+    # keyed to an exact version — so bumping esbuild or Vite needs that key
+    # updated, or the build fails with "@esbuild/<platform> could not be found".
