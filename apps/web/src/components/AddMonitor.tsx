@@ -47,7 +47,7 @@ export function AddMonitor({ onAdded, onCancel }: { onAdded: () => void; onCance
   }
 
   return (
-    <form className="add-form" data-glass onSubmit={submit} onKeyDown={(e) => e.key === "Escape" && onCancel()}>
+    <form className="add-form" data-glass onSubmit={(event) => void submit(event)} onKeyDown={(e) => e.key === "Escape" && onCancel()}>
       <div className="field">
         <label htmlFor="monitor-name">Name</label>
         <input

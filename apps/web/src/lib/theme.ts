@@ -18,7 +18,7 @@ export function useTheme(): [Theme, () => void] {
   const [theme, setTheme] = useState<Theme>(initial);
 
   useEffect(() => {
-    document.documentElement.dataset["theme"] = theme;
+    document.documentElement.dataset.theme = theme;
     try {
       localStorage.setItem(KEY, theme);
     } catch {

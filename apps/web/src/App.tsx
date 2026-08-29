@@ -98,7 +98,10 @@ export function App() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  const monitors = snapshot?.monitors ?? [];
+  // Stable identity: `snapshot?.monitors ?? []` produced a fresh array on every
+  // render, so both memos below recomputed constantly and the polling interval
+  // effectively re-derived the whole list each frame.
+  const monitors = useMemo(() => snapshot?.monitors ?? [], [snapshot]);
   const fleet = useMemo(() => summarise(monitors), [monitors]);
 
   const visible = useMemo(() => {
