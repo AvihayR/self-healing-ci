@@ -6,6 +6,50 @@ import { InMemoryCheckStore, InMemoryMonitorStore } from "../src/store/memory.ts
 
 const NOW = Date.UTC(2026, 7, 29, 12, 0, 0);
 
+/**
+ * Fastify's inject response types `json()` as `any`. Naming the shape at each
+ * call site is not ceremony: it means a change to the API contract fails these
+ * tests at compile time rather than surviving until an assertion happens to
+ * touch the field that moved.
+ */
+interface MonitorBody {
+  id: string;
+  url: string;
+  name: string;
+  intervalSeconds: number;
+  createdAt: number;
+}
+
+interface StatusBody extends MonitorBody {
+  lastCheckedAt: number | null;
+  up: boolean | null;
+  lastResponseMs: number | null;
+}
+
+interface UptimeBody {
+  window: string;
+  total: number;
+  ok: number;
+  failed: number;
+  ratio: number | null;
+  percent: number | null;
+}
+
+interface HistoryBody {
+  monitorId: string;
+  window: string;
+  buckets: { start: number; total: number }[];
+}
+
+interface ErrorBody {
+  error: string;
+}
+
+function json<T>(response: { json: () => unknown }): T {
+  return response.json() as T;
+}
+
+
 function harness() {
   const monitors = new InMemoryMonitorStore();
   const checks = new InMemoryCheckStore();
@@ -29,7 +73,7 @@ describe("GET /healthz", () => {
     const { app } = appFor();
     const response = await app.inject({ method: "GET", url: "/healthz" });
     assert.equal(response.statusCode, 200);
-    assert.deepEqual(response.json(), { status: "ok", uptimeSeconds: 5 });
+    assert.deepEqual(json(response), { status: "ok", uptimeSeconds: 5 });
   });
 });
 
@@ -43,7 +87,7 @@ describe("POST /monitors", () => {
     });
 
     assert.equal(response.statusCode, 201);
-    const body = response.json();
+    const body = json<MonitorBody>(response);
     assert.equal(body.url, "https://example.com");
     assert.equal(body.intervalSeconds, 300);
     assert.equal(body.createdAt, NOW);
@@ -58,7 +102,7 @@ describe("POST /monitors", () => {
       payload: { url: "not-a-url", name: "bad" },
     });
     assert.equal(response.statusCode, 400);
-    assert.equal(response.json().error, "invalid_body");
+    assert.equal(json<ErrorBody>(response).error, "invalid_body");
   });
 
   it("rejects an interval below the floor", async () => {
@@ -77,7 +121,7 @@ describe("GET /monitors", () => {
     const { app } = appFor();
     const response = await app.inject({ method: "GET", url: "/monitors" });
     assert.equal(response.statusCode, 200);
-    assert.deepEqual(response.json(), []);
+    assert.deepEqual(json(response), []);
   });
 
   it("reports a null status for a monitor that has never been probed", async () => {
@@ -88,7 +132,8 @@ describe("GET /monitors", () => {
       payload: { url: "https://example.com", name: "example" },
     });
 
-    const [monitor] = (await app.inject({ method: "GET", url: "/monitors" })).json();
+    const [monitor] = json<StatusBody[]>(await app.inject({ method: "GET", url: "/monitors" }));
+    assert.ok(monitor !== undefined, "expected one monitor in the list");
     assert.equal(monitor.up, null, "unmeasured is not up");
     assert.equal(monitor.lastCheckedAt, null);
   });
@@ -99,7 +144,8 @@ describe("GET /monitors", () => {
     await checks.append({ monitorId: "m1", at: NOW - 10_000, ok: false, responseMs: null, status: null });
     await checks.append({ monitorId: "m1", at: NOW - 1_000, ok: true, responseMs: 42, status: 200 });
 
-    const [monitor] = (await app.inject({ method: "GET", url: "/monitors" })).json();
+    const [monitor] = json<StatusBody[]>(await app.inject({ method: "GET", url: "/monitors" }));
+    assert.ok(monitor !== undefined, "expected one monitor in the list");
     assert.equal(monitor.up, true);
     assert.equal(monitor.lastResponseMs, 42);
     assert.equal(monitor.lastCheckedAt, NOW - 1_000);
@@ -118,13 +164,13 @@ describe("GET /monitors/:id/uptime", () => {
     await monitors.create({ id: "m1", url: "https://a.test", name: "a", intervalSeconds: 300, createdAt: NOW });
     const response = await app.inject({ method: "GET", url: "/monitors/m1/uptime?window=1y" });
     assert.equal(response.statusCode, 400);
-    assert.equal(response.json().error, "invalid_window");
+    assert.equal(json<ErrorBody>(response).error, "invalid_window");
   });
 
   it("returns a null ratio for a monitor with no checks", async () => {
     const { app, monitors } = appFor();
     await monitors.create({ id: "m1", url: "https://a.test", name: "a", intervalSeconds: 300, createdAt: NOW });
-    const body = (await app.inject({ method: "GET", url: "/monitors/m1/uptime" })).json();
+    const body = json<UptimeBody>(await app.inject({ method: "GET", url: "/monitors/m1/uptime" }));
     assert.equal(body.ratio, null);
     assert.equal(body.window, "30d", "30d is the default window");
   });
@@ -136,7 +182,7 @@ describe("GET /monitors/:id/uptime", () => {
     await checks.append({ monitorId: "m1", at: NOW - 2_000, ok: true, responseMs: 10, status: 200 });
     await checks.append({ monitorId: "m1", at: NOW - 3_000, ok: false, responseMs: null, status: null });
 
-    const body = (await app.inject({ method: "GET", url: "/monitors/m1/uptime?window=24h" })).json();
+    const body = json<UptimeBody>(await app.inject({ method: "GET", url: "/monitors/m1/uptime?window=24h" }));
     assert.equal(body.total, 3);
     assert.equal(body.ok, 2);
     assert.equal(body.percent, 66.667);
@@ -147,11 +193,11 @@ describe("GET /monitors/:id/history", () => {
   it("returns a contiguous bucket series", async () => {
     const { app, monitors } = appFor();
     await monitors.create({ id: "m1", url: "https://a.test", name: "a", intervalSeconds: 300, createdAt: NOW });
-    const body = (await app.inject({ method: "GET", url: "/monitors/m1/history?window=24h" })).json();
+    const body = json<HistoryBody>(await app.inject({ method: "GET", url: "/monitors/m1/history?window=24h" }));
 
     assert.equal(body.window, "24h");
     assert.equal(body.buckets.length, 25, "24 hourly buckets plus the partial one containing now");
-    assert.equal(body.buckets[0].total, 0);
+    assert.equal(body.buckets[0]?.total, 0);
   });
 });
 

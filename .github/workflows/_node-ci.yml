@@ -1,0 +1,85 @@
+name: Node CI
+
+# Reusable. No triggers of its own — callers own the triggers and the
+# permissions, and a called workflow can only ever narrow what it was granted.
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        description: Node major version every job runs on.
+        type: string
+        required: false
+        default: "22"
+
+# Five jobs, not one. Granularity here is a design decision: every job merged
+# together is a distinction sitting 07's classifier can no longer make. A lint
+# failure and a test failure have to be separately identifiable, or triage has
+# nothing to grip and every failure reduces to "verify failed".
+jobs:
+  lint:
+    name: lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+        with:
+          node-version: ${{ inputs.node-version }}
+      - run: npm run lint
+
+  typecheck:
+    name: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+        with:
+          node-version: ${{ inputs.node-version }}
+      - run: npm run typecheck
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+        with:
+          node-version: ${{ inputs.node-version }}
+      - run: npm test
+
+  contracts:
+    name: contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+        with:
+          node-version: ${{ inputs.node-version }}
+      # Regenerates apps/web/src/api-types.ts from the zod schemas and fails if
+      # anything moved. Changing an API shape without regenerating becomes a
+      # named, diagnosable failure here instead of a runtime surprise two
+      # directories from the edit.
+      - run: npm run gen:types:check
+
+  build:
+    name: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: ./.github/actions/setup-workspace
+        with:
+          node-version: ${{ inputs.node-version }}
+      - run: npm run build
+
+      # Uploaded so a later deploy can ship the exact bytes that passed these
+      # jobs, rather than rebuilding from source and shipping something nothing
+      # tested. The same discipline as terraform apply consuming a saved plan.
+      # Nothing consumes this yet; sitting 03 will.
+      - name: Upload build output
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ github.sha }}
+          path: |
+            apps/api/dist
+            apps/web/dist
+          retention-days: 7
+          if-no-files-found: error

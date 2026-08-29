@@ -1,6 +1,6 @@
 import type { CreateMonitor, History, Monitor, MonitorStatus, Uptime, Window } from "../api-types.ts";
 
-const BASE = import.meta.env["VITE_API_BASE"] ?? "";
+const BASE: string = import.meta.env.VITE_API_BASE ?? "";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${BASE}${path}`, init);

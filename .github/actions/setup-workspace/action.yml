@@ -1,0 +1,31 @@
+name: Setup workspace
+description: Node, dependency cache and a clean install. The glue at the top of every job.
+
+inputs:
+  node-version:
+    description: Node major version to install.
+    required: false
+    default: "22"
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: npm
+
+    # `npm ci` rather than `npm install`: the lockfile is the input, and a job
+    # that quietly resolves a different tree than the one committed makes the
+    # dependency-drift breaks in the catalogue undiagnosable.
+    - name: Install
+      shell: bash
+      run: npm ci
+
+    # esbuild ships a platform binary from a postinstall script. npm 11 defers
+    # unreviewed install scripts, and the root package.json's allowScripts entry
+    # is what lets this one run — without the binary, `vite build` fails with an
+    # error that names esbuild rather than the permission that blocked it.
+    - name: Verify esbuild binary
+      shell: bash
+      run: node -e "require('esbuild'); console.log('esbuild binary present')"
