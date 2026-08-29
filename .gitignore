@@ -16,3 +16,8 @@ tfplan
 .DS_Store
 Thumbs.db
 *.bak
+
+# Design artefacts live on disk, not in the repository.
+# docs/ itself stays free for the scorecard dashboard at sitting 11.
+docs/ci-healer-plan.*
+docs/ci-healer-architecture.drawio

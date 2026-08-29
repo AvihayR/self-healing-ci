@@ -1,101 +1,86 @@
-# self-healing-ci
+<div align="center">
 
-A sandbox repository that **breaks on purpose**, so a Claude-driven agent can be drilled
-at diagnosing CI failures and opening fix PRs.
+# 🐤 self-healing-ci
 
-The goal is skill, not a product. Real pipelines fail too rarely and too slowly to
-practise against, so this one injects failures on demand, scores what the agent does with
-them, and keeps a guard in the loop that rejects the cheap wrong answer — deleting an
-assertion, adding `test.skip`, loosening a lint rule — that would turn the pipeline green
-while making the code worse.
+**A pipeline that breaks on purpose — so an AI agent can be drilled at fixing it.**
 
-**The plan is the real document.** [`docs/ci-healer-plan.pdf`](docs/ci-healer-plan.pdf)
-covers the thesis, architecture, guardrails, the twenty-two-break catalogue, the scorecard
-and a twelve-sitting roadmap. [`docs/ci-healer-architecture.drawio`](docs/ci-healer-architecture.drawio)
-is the same system as one diagram.
+![Node](https://img.shields.io/badge/node-%E2%89%A522-3c873a)
+![TypeScript](https://img.shields.io/badge/typescript-strict-3178c6)
+![Tests](https://img.shields.io/badge/tests-76%20passing-1a7f37)
+![Sitting](https://img.shields.io/badge/roadmap-01%20of%2012-blue)
 
-## Canary — the application under test
+</div>
 
-A small uptime monitor. You register URLs, a scheduled probe pings them, and a dashboard
-shows current status, response-time history and rolling availability. That is the whole
-product; it is deliberately small, because the app is a substrate for failures and every
-hour spent on product features is an hour not spent on the pipeline.
+---
 
-It was chosen for how it fails. Time arithmetic over uptime windows and partial buckets
-is a rich source of subtle logic bugs. The probe makes real HTTP calls, so mocking it
-gives a first-class flaky-test generator. And the UI consumes generated types, so changing
-the API shape without regenerating breaks the build two directories from the edit.
+## 🎯 The idea
 
-## Where this is now
+Real pipelines fail too rarely to practise against. This one injects failures on demand,
+lets a Claude agent diagnose them and open a fix PR, and scores what it got right.
 
-**Sitting 01 of twelve.** The app skeleton exists, the uptime maths has tests worth
-trusting, and everything runs locally. There is no CI, no infrastructure and no agent yet
-— those arrive at sittings 02, 03 and 05.
+A guard rejects the cheap wrong answer — deleting an assertion, adding `test.skip`,
+loosening a lint rule — because a green pipeline and correct code are not the same thing.
 
-## Layout
+## 🐦 Canary — the app under test
 
-```
-apps/api/          Fastify + TypeScript service, Lambda-adapted later
-apps/web/          React + Vite dashboard; api-types.ts is generated, not hand-written
-scripts/           gen-types.mjs — the contract generator
-docs/              the plan, the architecture diagram, and later the scorecard
-```
+A small uptime monitor. Register URLs, a probe pings them, a dashboard shows status,
+latency history and rolling availability.
 
-Arriving later, per the roadmap: `infra/` (Terraform, sitting 03), `.github/workflows/`
-(sitting 02), `breaks/` (sitting 10), `scripts/guard/` (sitting 09).
+Deliberately small. It exists to fail in interesting ways: 🕐 time arithmetic, 🌐 real
+HTTP calls, 🔗 generated types the UI depends on.
 
-## Running it
-
-Requires Node 22 or newer.
+## 🚀 Quick start
 
 ```bash
 npm install
-npm test          # 76 tests: node:test for the API, Vitest for the web app
-npm run typecheck
-npm run build
-npm run dev:api   # http://127.0.0.1:3000
-npm run dev:web   # http://127.0.0.1:5173
+npm test        # 76 tests
+npm run dev:api # :3000
+npm run dev:web # :5173
 ```
 
-Nothing external is needed to run or test. Monitors and check results are held in memory
-behind the `MonitorStore` and `CheckStore` interfaces; Postgres and OpenSearch arrive at
-sitting 03 as implementations of those same interfaces.
+No database, no cloud, no config. Everything runs in memory.
 
-### The contract
+## 🔌 API
 
-`apps/web/src/api-types.ts` is generated from the zod schemas in
-`apps/api/src/schemas.ts` and committed.
+| | |
+|---|---|
+| `POST /monitors` | register a URL |
+| `GET /monitors` | list with status |
+| `GET /monitors/:id/history` | latency buckets · `?window=24h\|7d\|30d` |
+| `GET /monitors/:id/uptime` | rolling availability |
+| `DELETE /monitors/:id` | |
+| `GET /healthz` | deploy smoke test |
+
+## 🗺️ Roadmap
+
+- [x] **01** · Repo, app skeleton, first tests
+- [ ] **02** · Reusable CI workflows
+- [ ] **03** · Terraform + OIDC → staging
+- [ ] **04** · Prod, approval gate, rollback
+- [ ] **05** · Bedrock smoke test
+- [ ] **06** · PR reviewer agent
+- [ ] **07** · Failure classifier
+- [ ] **08** · Healer v1 🔧
+- [ ] **09** · The guard 🛡️
+- [ ] **10** · Break catalogue · 22 failures
+- [ ] **11** · Scorecard 📊
+- [ ] **12** · Harden and present
+
+## 📐 Layout
+
+```
+apps/api/   Fastify · TypeScript · the uptime maths
+apps/web/   React · Vite · api-types.ts is generated
+scripts/    contract generator
+```
+
+Arriving with the roadmap: `.github/workflows/` · `infra/` · `breaks/` · `scripts/guard/`
+
+## 🔗 Contract
+
+`apps/web/src/api-types.ts` is generated from the zod schemas and committed.
 
 ```bash
-npm run gen:types         # regenerate after changing the contract
-npm run gen:types:check   # what CI runs — fails if regenerating is not a no-op
+npm run gen:types        # after changing the contract
+npm run gen:types:check  # CI fails if that was not a no-op
 ```
-
-## API
-
-```
-POST   /monitors              register a URL to watch
-GET    /monitors              list with current status
-GET    /monitors/:id/history  bucketed response times — ?window=24h|7d|30d
-GET    /monitors/:id/uptime   rolling availability
-DELETE /monitors/:id
-GET    /healthz               used by the deploy smoke test
-```
-
-## Two conventions worth knowing before reading the code
-
-**All time is epoch milliseconds, UTC.** There is no `Date` in the maths modules. Every
-timezone bug this project injects later should come from a place someone chose, not from
-an implicit local-time conversion nobody noticed.
-
-**Unmeasured is not the same as healthy.** A monitor with no checks reports `null`
-availability, never 100%. A probe that failed to connect has `responseMs: null`, never 0.
-These are the two places where a plausible-looking default would quietly turn missing data
-into good news, which is the exact failure mode the whole project exists to catch.
-
-## Why the tests matter more than the app
-
-The healer's entire safety story rests on "the tests were green afterwards" meaning
-something. Uptime calculation, bucketing and probe retry logic have real tests with real
-edge cases; everything else is deliberately thin. A lab with weak tests teaches both you
-and the agent the wrong lesson, and every number on the scorecard inherits that weakness.
