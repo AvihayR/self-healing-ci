@@ -21,9 +21,3 @@ runs:
     - name: Install
       shell: bash
       run: npm ci
-
-    # Note for whoever hits it: esbuild ships a platform binary from a
-    # postinstall script, and npm 11 defers unreviewed install scripts. The root
-    # package.json's `allowScripts` entry is what permits this one, and it is
-    # keyed to an exact version — so bumping esbuild or Vite needs that key
-    # updated, or the build fails with "@esbuild/<platform> could not be found".
