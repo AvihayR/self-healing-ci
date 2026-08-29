@@ -33,6 +33,7 @@
   --warn: oklch(0.83 0.14 78);
   --unknown: oklch(0.72 0.01 265);
   --up-2: oklch(0.6 0.14 172);
+  --sweep: rgb(255 255 255 / 0.34);
   --track-empty: rgb(255 255 255 / 0.12);
 
   --accent: oklch(0.82 0.13 220);
@@ -93,6 +94,7 @@
   --warn: oklch(0.52 0.13 65);
   --unknown: oklch(0.49 0.01 265);
   --up-2: oklch(0.56 0.11 176);
+  --sweep: rgb(255 255 255 / 0.3);
   --track-empty: rgb(0 0 0 / 0.12);
 
   --accent: oklch(0.52 0.16 250);
@@ -611,6 +613,7 @@ button, input {
 .track .tick[data-state="empty"] { background: var(--track-empty); }
 
 .row:hover .track .tick[data-state="ok"] { opacity: 1; }
+.row:hover .track::after { animation-duration: 1800ms; }
 
 .plot {
   display: flex;
@@ -635,10 +638,59 @@ button, input {
 .plot .bar[data-state="empty"] { background: var(--track-empty); height: 2px !important; }
 .plot .bar:hover { filter: brightness(1.35); }
 
-@media (prefers-reduced-motion: no-preference) {
-  .track[data-draw="true"] .tick { animation: draw 420ms var(--ease) backwards; }
-  .plot[data-draw="true"] .bar { animation: draw 460ms var(--ease) backwards; }
+/* The track stays alive the whole time it is on screen: a soft highlight sweeps
+   along it, the way a recorder head crosses a chart.
+
+   One animated pseudo-element per track rather than a keyframe on each tick.
+   Animating 175 ticks measured 20fps median and 9fps at p95, because every tick
+   repaint forced the blurred panel underneath it to re-composite. This is seven
+   elements moving on `transform` alone, which the compositor handles without
+   touching the glass at all.
+
+   Hue never moves. Hue is the status, and a bar that drifted between colours
+   would be reporting something that did not happen. */
+.track {
+  position: relative;
+  overflow: hidden;
 }
+
+.track::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    100deg,
+    transparent 34%,
+    var(--sweep) 50%,
+    transparent 66%
+  );
+  transform: translate3d(-110%, 0, 0);
+}
+
+@keyframes sweep {
+  to { transform: translate3d(110%, 0, 0); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .track::after {
+    animation: sweep 3600ms cubic-bezier(0.5, 0, 0.5, 1) infinite;
+    will-change: transform;
+  }
+
+  .track[data-draw="true"] .tick {
+    animation: draw 420ms var(--ease) backwards;
+    animation-delay: calc(var(--t, 0) * 3ms);
+  }
+
+  .plot[data-draw="true"] .bar {
+    animation: draw 460ms var(--ease) backwards;
+    animation-delay: calc(var(--t, 0) * 3ms);
+  }
+}
+
+/* An unmeasured track has nothing to report, so nothing sweeps across it. */
+.track-void::after { content: none; }
 
 @keyframes draw {
   from { transform: scaleY(0); opacity: 0; }

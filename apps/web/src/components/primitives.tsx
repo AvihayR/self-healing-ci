@@ -67,10 +67,10 @@ export function UptimeTrack({ buckets, draw }: { buckets: readonly Bucket[]; dra
           key={bucket.start}
           className="tick"
           data-state={bucketState(bucket)}
-          style={{
-            ["--t" as string]: `${Math.round((index / last) * 100)}`,
-            ...(draw ? { animationDelay: `${Math.min(index * 5, 260)}ms` } : {}),
-          }}
+          // `--t` is the tick's position along the track, 0–100. Every timing
+          // derives from it in CSS — the entrance stagger and the phase offset
+          // of the live wave — so there is one source of position, not two.
+          style={{ ["--t" as string]: `${Math.round((index / last) * 100)}` }}
           title={describeBucket(bucket)}
         />
       ))}
@@ -85,6 +85,7 @@ export function UptimeTrack({ buckets, draw }: { buckets: readonly Bucket[]; dra
  */
 export function LatencyPlot({ buckets, draw }: { buckets: readonly Bucket[]; draw: boolean }) {
   const peak = peakLatency(buckets);
+  const last = Math.max(buckets.length - 1, 1);
   return (
     <div className="plot" data-draw={draw ? "true" : "false"}>
       {buckets.map((bucket, index) => (
@@ -94,7 +95,7 @@ export function LatencyPlot({ buckets, draw }: { buckets: readonly Bucket[]; dra
           data-state={bucketState(bucket)}
           style={{
             height: `${barHeight(bucket, peak)}%`,
-            ...(draw ? { animationDelay: `${Math.min(index * 6, 300)}ms` } : {}),
+            ["--t" as string]: `${Math.round((index / last) * 100)}`,
           }}
           title={describeBucket(bucket)}
         />

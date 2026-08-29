@@ -70,6 +70,11 @@ filtering changes the set, panels lift on hover, the palette scales in from the 
 
 - 140–220 ms for state feedback, exponential ease-out.
 - One authored entrance: the tracks draw themselves once, on first paint.
+- The tracks then stay alive: a soft highlight sweeps along each one continuously,
+  the way a recorder head crosses a chart. One animated pseudo-element per track on
+  `transform` alone, never a keyframe per tick, so the glass beneath never
+  re-composites. Its strength is tuned per theme so a passing bar brightens without
+  washing out of its own colour.
 - Everything above collapses to an instant state change under `prefers-reduced-motion`.
 
 ## Browser surfaces
