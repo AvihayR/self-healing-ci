@@ -86,4 +86,3 @@ Arriving with the roadmap: `.github/workflows/` · `infra/` · `breaks/` · `scr
 npm run gen:types        # after changing the contract
 npm run gen:types:check  # CI fails if that was not a no-op
 ```
-// protection probe
