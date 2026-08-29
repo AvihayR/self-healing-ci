@@ -26,6 +26,10 @@ runs:
     # unreviewed install scripts, and the root package.json's allowScripts entry
     # is what lets this one run — without the binary, `vite build` fails with an
     # error that names esbuild rather than the permission that blocked it.
+    # `transformSync`, not `require`. esbuild resolves its platform binary
+    # lazily on first use, so requiring the package succeeds even when the
+    # binary is missing — a guard written that way passes in precisely the
+    # situation it exists to catch. This invokes it for real.
     - name: Verify esbuild binary
       shell: bash
-      run: node -e "require('esbuild'); console.log('esbuild binary present')"
+      run: node -e "require('esbuild').transformSync('const a = 1'); console.log('esbuild binary present')"
