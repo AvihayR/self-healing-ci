@@ -70,12 +70,21 @@ filtering changes the set, panels lift on hover, the palette scales in from the 
 
 - 140–220 ms for state feedback, exponential ease-out.
 - One authored entrance: the tracks draw themselves once, on first paint.
-- The tracks then stay alive: a soft highlight sweeps along each one continuously,
-  the way a recorder head crosses a chart. One animated pseudo-element per track on
-  `transform` alone, never a keyframe per tick, so the glass beneath never
-  re-composites. Its strength is tuned per theme so a passing bar brightens without
-  washing out of its own colour.
+- The tracks then stay alive: a band crosses each one every 9 seconds, deepening the
+  colour already there via backdrop saturation rather than laying white over it. A
+  green bar goes greener, a red bar redder, and no bar ever drifts toward a hue it
+  did not earn. One animated pseudo-element per track on `transform`, never a
+  keyframe per tick, so the glass beneath never re-composites.
 - Everything above collapses to an instant state change under `prefers-reduced-motion`.
+
+## Cursor
+
+A soft light follows the pointer across glass, and only across glass — the ambient
+field behind the page never lights. It rides on each panel's own ,
+so it paints behind text with no stacking work and can never intercept a click. One
+document listener coalesced into a single frame, not one per panel, because panels
+appear and disappear as monitors are added and filtered. Mouse only: touch has no
+hover, so the glow would just flash on tap.
 
 ## Browser surfaces
 

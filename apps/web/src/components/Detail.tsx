@@ -41,7 +41,7 @@ export function Detail({ monitor, onClose }: { monitor: MonitorStatus; onClose: 
   const last = buckets[buckets.length - 1];
 
   return (
-    <section className="detail" aria-label={`${monitor.name} detail`}>
+    <section className="detail" data-glass aria-label={`${monitor.name} detail`}>
       <div className="detail-head">
         <div>
           <h2>{monitor.name}</h2>

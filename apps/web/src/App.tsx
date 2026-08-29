@@ -8,6 +8,7 @@ import { Palette, type Command } from "./components/Palette.tsx";
 import { SkeletonRows, Status, UptimeTrack } from "./components/primitives.tsx";
 import { deleteMonitor, fetchHistory, fetchMonitors } from "./lib/api.ts";
 import { formatCount, formatMs, formatRelative, formatStatus } from "./lib/format.ts";
+import { useCursorGlow } from "./lib/glow.ts";
 import { useTheme } from "./lib/theme.ts";
 import { formatClock } from "./lib/time.ts";
 
@@ -32,6 +33,7 @@ export function App() {
   const [helpOpen, setHelpOpen] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [firstPaint, setFirstPaint] = useState(true);
+  useCursorGlow();
   const searchRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async (signal?: AbortSignal): Promise<Snapshot> => {
@@ -148,7 +150,7 @@ export function App() {
       <div className="ambient" aria-hidden="true" />
 
       <div className="shell">
-        <header className="masthead glass">
+        <header className="masthead glass" data-glass>
           <h1 className="wordmark">
             <span className="glyph">Canary</span>
             <span className="tag">uptime monitor</span>
@@ -198,7 +200,7 @@ export function App() {
         </header>
 
         {helpOpen && (
-          <section className="notice">
+          <section className="notice" data-glass>
             <h2>What this is</h2>
             <p>
               Canary watches URLs and tells you whether they answer. It is the application that
@@ -261,7 +263,7 @@ export function App() {
         </section>
 
         {error !== null && (
-          <div className="notice" data-tone="error">
+          <div className="notice" data-tone="error" data-glass>
             <h2>The API is not answering</h2>
             <p>
               {error}. Start it with <code>npm run dev:api</code> — the dashboard reads{" "}
@@ -297,6 +299,7 @@ export function App() {
               <li key={monitor.id}>
                 <div
                   className="row"
+                  data-glass
                   role="button"
                   tabIndex={0}
                   aria-expanded={monitor.id === selected}
@@ -346,7 +349,7 @@ export function App() {
         )}
 
         {snapshot !== null && monitors.length === 0 && !adding && (
-          <section className="notice">
+          <section className="notice" data-glass>
             <h2>Nothing is being watched yet</h2>
             <p>
               Add a URL and Canary starts probing it on a schedule, recording whether it answered
@@ -367,7 +370,7 @@ export function App() {
         )}
 
         {snapshot !== null && monitors.length > 0 && visible.length === 0 && (
-          <section className="notice">
+          <section className="notice" data-glass>
             <h2>No monitors match</h2>
             <p>
               Nothing here is named or pointed at “{query}”
@@ -413,7 +416,7 @@ function Stat({
   }, [value]);
 
   return (
-    <div className="stat">
+    <div className="stat" data-glass>
       <span className="label">{label}</span>
       <span
         className="value"
