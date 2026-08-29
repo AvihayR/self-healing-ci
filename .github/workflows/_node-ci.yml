@@ -20,7 +20,7 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-workspace
         with:
           node-version: ${{ inputs.node-version }}
@@ -30,7 +30,7 @@ jobs:
     name: typecheck
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-workspace
         with:
           node-version: ${{ inputs.node-version }}
@@ -40,7 +40,7 @@ jobs:
     name: test
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-workspace
         with:
           node-version: ${{ inputs.node-version }}
@@ -50,7 +50,7 @@ jobs:
     name: contracts
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-workspace
         with:
           node-version: ${{ inputs.node-version }}
@@ -64,7 +64,7 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: ./.github/actions/setup-workspace
         with:
           node-version: ${{ inputs.node-version }}
@@ -75,7 +75,7 @@ jobs:
       # tested. The same discipline as terraform apply consuming a saved plan.
       # Nothing consumes this yet; sitting 03 will.
       - name: Upload build output
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: build-${{ github.sha }}
           path: |
