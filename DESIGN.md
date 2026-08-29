@@ -80,7 +80,7 @@ filtering changes the set, panels lift on hover, the palette scales in from the 
 ## Cursor
 
 A soft light follows the pointer across glass, and only across glass — the ambient
-field behind the page never lights. It rides on each panel's own ,
+field behind the page never lights. It rides on each panel's own `background-image`,
 so it paints behind text with no stacking work and can never intercept a click. One
 document listener coalesced into a single frame, not one per panel, because panels
 appear and disappear as monitors are added and filtered. Mouse only: touch has no
