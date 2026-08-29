@@ -47,7 +47,7 @@ export function Detail({ monitor, onClose }: { monitor: MonitorStatus; onClose: 
           <h2>{monitor.name}</h2>
           <span className="url">{monitor.url}</span>
         </div>
-        <button type="button" className="close" onClick={onClose}>
+        <button type="button" className="control" onClick={onClose}>
           Close
         </button>
       </div>

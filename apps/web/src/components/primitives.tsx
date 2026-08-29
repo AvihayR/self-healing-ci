@@ -98,29 +98,30 @@ export function describeBucket(bucket: Bucket): string {
 
 export function SkeletonRows({ count = 5 }: { count?: number }) {
   return (
-    <tbody>
+    <ul className="list" aria-label="Loading monitors">
       {Array.from({ length: count }, (_unused, index) => (
-        <tr key={index}>
-          <td>
+        <li key={index}>
+          <div className="row" aria-hidden="true">
             <div className="cell-name">
               <span className="skeleton" style={{ width: "9rem" }} />
-              <span className="skeleton" style={{ width: "14rem", height: "0.65em" }} />
+              <span className="skeleton" style={{ width: "14rem", height: "0.65em", marginTop: 4 }} />
             </div>
-          </td>
-          <td>
-            <span className="skeleton" style={{ width: "4.5rem", display: "block" }} />
-          </td>
-          <td className="optional">
-            <span className="skeleton" style={{ width: "100%", height: "1.5rem", display: "block" }} />
-          </td>
-          <td className="num">
-            <span className="skeleton" style={{ width: "3.5rem", marginLeft: "auto", display: "block" }} />
-          </td>
-          <td className="num optional">
-            <span className="skeleton" style={{ width: "4rem", marginLeft: "auto", display: "block" }} />
-          </td>
-        </tr>
+            <div className="status-cell">
+              <span className="skeleton" style={{ width: "4.5rem" }} />
+            </div>
+            <div className="optional">
+              <span className="skeleton" style={{ width: "100%", height: "1.6rem" }} />
+            </div>
+            <div className="cell-num">
+              <span className="skeleton" style={{ width: "3.5rem", marginLeft: "auto" }} />
+            </div>
+            <div className="cell-num optional">
+              <span className="skeleton" style={{ width: "4rem", marginLeft: "auto" }} />
+            </div>
+            <div />
+          </div>
+        </li>
       ))}
-    </tbody>
+    </ul>
   );
 }
