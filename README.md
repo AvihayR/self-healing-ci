@@ -6,8 +6,9 @@
 
 ![Node](https://img.shields.io/badge/node-%E2%89%A522-3c873a)
 ![TypeScript](https://img.shields.io/badge/typescript-strict-3178c6)
+![CI](https://github.com/AvihayR/self-healing-ci/actions/workflows/ci.yml/badge.svg)
 ![Tests](https://img.shields.io/badge/tests-106%20passing-1a7f37)
-![Sitting](https://img.shields.io/badge/roadmap-01%20of%2012-blue)
+![Sitting](https://img.shields.io/badge/roadmap-02%20of%2012-blue)
 
 </div>
 
@@ -56,7 +57,7 @@ No database, no cloud, no config. Everything runs in memory.
 ## 🗺️ Roadmap
 
 - [x] **01** · Repo, app skeleton, first tests
-- [ ] **02** · Reusable CI workflows
+- [x] **02** · Reusable CI workflows
 - [ ] **03** · Terraform + OIDC → staging
 - [ ] **04** · Prod, approval gate, rollback
 - [ ] **05** · Bedrock smoke test
