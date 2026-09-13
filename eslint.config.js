@@ -4,7 +4,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 
 /**
- * One flat config for both workspaces.
+ * One flat config for both apps.
  *
  * Type-aware rules are on. Without a type-checked lint the `lint` job would
  * only ever catch what `typecheck` already catches, and the two jobs the plan

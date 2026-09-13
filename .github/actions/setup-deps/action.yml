@@ -1,0 +1,36 @@
+name: Setup deps
+description: Node, dependency cache and a clean install of all three roots. The glue at the top of every job.
+
+inputs:
+  node-version:
+    description: Node major version to install.
+    required: false
+    default: "22"
+
+runs:
+  using: composite
+  steps:
+    - uses: actions/setup-node@v5
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: npm
+        # Every lockfile has to be named, or the cache key is derived from the
+        # root one alone and a job restores a stale tree after an app-only
+        # dependency change.
+        cache-dependency-path: |
+          package-lock.json
+          apps/api/package-lock.json
+          apps/web/package-lock.json
+
+    # Three roots, three installs. apps/api and apps/web resolve their own
+    # dependency trees; the repository root holds only the shared lint tooling.
+    #
+    # `npm ci` rather than `npm install`: the lockfile is the input, and a job
+    # that quietly resolves a different tree than the one committed makes the
+    # dependency-drift breaks in the catalogue undiagnosable.
+    - name: Install
+      shell: bash
+      run: |
+        npm ci
+        npm ci --prefix apps/api
+        npm ci --prefix apps/web
