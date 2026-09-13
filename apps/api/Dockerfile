@@ -1,5 +1,5 @@
-# Container deploy path. The intended AWS path ships this as a Lambda instead;
-# both are supported and neither reads the other.
+# Container deploy path. This Dockerfile is not used in AWS - that path ships the
+# API as a Lambda handler, not a listening server.
 
 # Build context is the repository root, not apps/api:
 #   docker build -t canary-back -f apps/api/Dockerfile .

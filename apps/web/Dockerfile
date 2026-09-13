@@ -1,5 +1,5 @@
-# Container deploy path. The intended AWS path ships this to CloudFront instead;
-# both are supported and neither reads the other.
+# Container deploy path. This Dockerfile is not used in AWS - that path serves
+# apps/web/dist from S3 behind CloudFront.
 
 # Build context is the repository root, not apps/web:
 #   docker build -t canary-front -f apps/web/Dockerfile .
