@@ -1,19 +1,28 @@
+# Build context is the repository root, not apps/web:
+#   docker build -t canary-front -f apps/web/Dockerfile .
+# tsconfig.json extends ../../tsconfig.base.json, which only exists if the root
+# is in the context.
+
 # Stage 1: Builder image
 FROM node:24-alpine AS builder
 
 # Workdir inside the container
-WORKDIR /app
+WORKDIR /repo
 
-# Copy the project's depenecy file for building 
-COPY package*.json ./
+# The shared compiler options every app extends
+COPY tsconfig.base.json ./
+
+# Copy the project's depenecy file for building
+COPY apps/web/package*.json ./apps/web/
 
 # Install dependencies
-RUN npm ci
+RUN npm ci --prefix apps/web
 
 # Copy the rest of the app
-COPY . .
+COPY apps/web ./apps/web
 
 # Build the app
+WORKDIR /repo/apps/web
 RUN npm run build
 
 
@@ -22,10 +31,10 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copy the built application to /usr/share/nginx/html default serving route
-COPY --from=builder /app/dist /usr/share/nginx/html
+COPY --from=builder /repo/apps/web/dist /usr/share/nginx/html
 
 # Expose port 80 to serve the app
 EXPOSE 80
 
 # Run Nginx with the app
-CMD ["nginx", "-g", "deamon off;"]
+CMD ["nginx", "-g", "daemon off;"]
