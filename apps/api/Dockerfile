@@ -1,3 +1,6 @@
+# Container deploy path. The intended AWS path ships this as a Lambda instead;
+# both are supported and neither reads the other.
+
 # Build context is the repository root, not apps/api:
 #   docker build -t canary-back -f apps/api/Dockerfile .
 

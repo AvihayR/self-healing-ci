@@ -14,6 +14,15 @@
 
 ---
 
+## 🚢 Two ways to deploy
+
+Canary can be deployed either way, and the two are independent:
+
+- **AWS, via Terraform** — Lambda + API Gateway for the API, CloudFront for the dashboard.
+  This is the intended path and the one the pipeline drills against.
+- **Kubernetes** — the Dockerfiles under `apps/*/` build both services as containers.
+  Local practice only; nothing in CI or Terraform reads them.
+
 ## 🎯 The idea
 
 Real pipelines fail too rarely to practise against. This one injects failures on demand,

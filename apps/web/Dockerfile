@@ -1,3 +1,6 @@
+# Container deploy path. The intended AWS path ships this to CloudFront instead;
+# both are supported and neither reads the other.
+
 # Build context is the repository root, not apps/web:
 #   docker build -t canary-front -f apps/web/Dockerfile .
 # tsconfig.json extends ../../tsconfig.base.json, which only exists if the root
