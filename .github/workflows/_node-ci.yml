@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup-workspace
+      - uses: ./.github/actions/setup-deps
         with:
           node-version: ${{ inputs.node-version }}
       - run: npm run lint
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup-workspace
+      - uses: ./.github/actions/setup-deps
         with:
           node-version: ${{ inputs.node-version }}
       - run: npm run typecheck
@@ -41,7 +41,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup-workspace
+      - uses: ./.github/actions/setup-deps
         with:
           node-version: ${{ inputs.node-version }}
       - run: npm test
@@ -51,7 +51,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup-workspace
+      - uses: ./.github/actions/setup-deps
         with:
           node-version: ${{ inputs.node-version }}
       # Regenerates apps/web/src/api-types.ts from the zod schemas and fails if
@@ -65,7 +65,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-      - uses: ./.github/actions/setup-workspace
+      - uses: ./.github/actions/setup-deps
         with:
           node-version: ${{ inputs.node-version }}
       - run: npm run build
