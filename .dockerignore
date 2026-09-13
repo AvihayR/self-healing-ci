@@ -1,0 +1,19 @@
+# Build context is the repository root, so everything below would otherwise be
+# shipped to the daemon. node_modules is the expensive one: it is reinstalled
+# from the lockfile inside the image anyway, and a host tree built on Windows
+# carries the wrong platform binaries for an alpine build.
+node_modules
+**/node_modules
+
+# Build output is produced in the image, never copied into it.
+**/dist
+**/*.tsbuildinfo
+
+.git
+.github
+.shots
+docs
+infra
+*.md
+.env
+.env.*
